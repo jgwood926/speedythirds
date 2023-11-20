@@ -19,8 +19,10 @@ let quality = major;
 
 let quizMin = 0;
 let quizMax = 7;
-let firstInt = 39;
+let firstInt = 50;
 let lastInt = firstInt + 35;
+let intervalArray = [];
+let randomInterval = 0;
 
 let firstPage = -1;
 let infoPage = 0;
@@ -50,6 +52,21 @@ function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min) ) + min;
   }
  
+function setArray(min, max)
+{
+    for (let i = 0; i < (max - min); i++){
+        intervalArray[i] = i + min
+    }
+    intervalArray[max-min] = 'x'
+
+    for (let j = (max - min) - 1; j > 0; j--) {
+        let k = Math.floor(Math.random() * (j + 1));
+        let temp = intervalArray[j];
+        intervalArray[j] = intervalArray[k];
+        intervalArray[k] = temp;
+    }
+    console.log(intervalArray)
+}
 function startTimer() {
     let minutes = ''
     let seconds = ''
@@ -75,12 +92,12 @@ function startTimer() {
             index = placeSaver+1
             if (timedQuizNum === preTest){
                 preTestScore = score;
-                banner.innerHTML = (`Pretest score: ${preTestScore}`)
+                banner.innerHTML = (`Pretest score: ${preTestScore}/minute`)
                 timedQuizNum = postTest 
             
             } else {
                 postTestScore = score;
-                banner.innerHTML = (`Post Test score: ${postTestScore}`)
+                banner.innerHTML = ('Speedy Thirds')
                 instructionFinished = true
             }
             
@@ -92,16 +109,14 @@ function startTimer() {
 }
 function changeImage() {
 
-    
-    
-
     if (instructionFinished){
         
         imgs.style.transform = 'translateX(0px)'
         imgs.style.backgroundColor = 'white'
         imgs.style.display = 'block'
-        imgs.style.padding = '150px 0px'
+        imgs.style.padding = '10px 0px'
         imgs.style.textAlign = 'center'
+        imgs.style.fontWeight = 'bold'
         majorBtn.style.visibility = 'hidden'
         minorBtn.style.visibility = 'hidden'
 
@@ -110,16 +125,19 @@ function changeImage() {
         if (preTestScore != 0){
             improvement = Math.round((postTestScore - preTestScore)/preTestScore * 100)
         }
-        imgs.innerHTML = (`Pretest score: ${preTestScore}<br> Post Test score: ${postTestScore}<br> Percent Improvement: ${improvement}%`) 
+        imgs.innerHTML = (`<h3>Pretest score: ${preTestScore}/minute<br> Post Test score: ${postTestScore}/minute<br> Percent Improvement: ${improvement}%</h3><br><br>Did you improve?<br>
+        <br>Can you use this method with other intervals? How about fifths? All fifths in C Major are perfect fifths except B-F!`) 
         console.log(imgs)
 
     }else { 
+
+        console.log(`index ${index}`)
 
         if (img[index].classList.contains("firstPage")) {
             pageType = firstPage
         } else if (img[index].classList.contains("page")){
             pageType = infoPage
-            banner.innerHTML = `Speedy Thirds  Page: ${index}` 
+            banner.innerHTML = "Speedy Thirds" 
             banner.style.backgroundColor = backgroundColor
         }
         else if (img[index].classList.contains("timedQuiz")){
@@ -147,13 +165,13 @@ function changeImage() {
 }
 
 function setButtons(){
-    
+    console.log(`pagetype ${pageType}`)
     if (pageType === firstPage){
-        leftBtn.style.visiblity = 'hidden'
-        rightBtn.style.visibility = 'visible'
+        leftBtn.style.visibility = 'hidden'
+        rightBtn.style.visibility = 'hidden'
         majorBtn.style.visibility = 'hidden'
         minorBtn.style.visibility = 'hidden'
-        beginBtn.style.visibility = 'hidden'
+        beginBtn.style.visibility = 'visible'
     }
     else if (pageType === infoPage){
      
@@ -165,7 +183,7 @@ function setButtons(){
         beginBtn.style.visibility = 'hidden'
         
     } else if (pageType === timedQuizPage || pageType === masteryQuizPage){
-        leftBtn.style.visibility = 'hidden'
+        leftBtn.style.visibility = 'visible'
         rightBtn.style.visibility = 'hidden'
         majorBtn.style.visibility = 'hidden'
         minorBtn.style.visibility = 'hidden'
@@ -187,7 +205,9 @@ function runPreTest(){
     quizMin = firstInt;
     quizMax = lastInt;
     placeSaver = index;
+    randomInterval = 0;
     
+    setArray(quizMin,quizMax)
     startTimer()
     quiz();
 
@@ -198,7 +218,9 @@ function runPostTest(){
     quizMin = firstInt;
     quizMax = lastInt;
     placeSaver = index;
+    randomInterval = 0;
     
+    setArray(quizMin,quizMax)
     startTimer()
     quiz();
 
@@ -207,6 +229,9 @@ function runPostTest(){
 function runMasteryQuiz(){
     score = 0;
     quizType = masteryQuiz;
+    randomInterval = 0;
+
+    console.log(`running masteryQuizNum ${masteryQuizNum}`)
        
     if (masteryQuizNum === 1) {
         quizMin = firstInt
@@ -225,6 +250,7 @@ function runMasteryQuiz(){
         quizMax = lastInt;
     }
 
+    setArray(quizMin,quizMax)
     placeSaver = index;
     quiz();
 
@@ -237,19 +263,16 @@ function quiz(){
         banner.innerHTML = (`Get 10 correct in a row: ${score}`)
     }
 
-    //prevent repeats
-    let temp = index
-    index = getRndInteger(quizMin, quizMax)
-    console.log(index)
-    if (temp === index)
-    {
-        console.log("duplicate")
-        index = getRndInteger(quizMin, quizMax)
+    
+    console.log(`index: ${index}`)
+        
+    if (intervalArray[randomInterval] === 'x'){
+        randomInterval = 0
     }
-    if (temp === index)
-    {
-        console.log("triplicate??")
-    }
+            
+    index = intervalArray[randomInterval]
+    randomInterval++    
+    
     if (img[index].classList.contains("major")){
         quality = major;
     } else {
@@ -259,6 +282,7 @@ function quiz(){
     if (quizType === masteryQuiz && score === 10){
     
         mastered = true
+        console.log(`increasing masteryQuizNum ${masteryQuizNum}`)
         masteryQuizNum++
         index = placeSaver + 1
         score = 0
@@ -267,7 +291,11 @@ function quiz(){
 }
 
 rightBtn.addEventListener('click', () => {
-
+    
+    if (mastered === true){
+        mastered = false
+    }
+    
     index++
     changeImage()
 
@@ -275,11 +303,11 @@ rightBtn.addEventListener('click', () => {
 
 leftBtn.addEventListener('click', () => {
 
-    console.log(`index: ${index}`)
-    console.log(mastered)
-    console.log(`masteryQuizNum ${masteryQuizNum}`)
+  
+
+
     if (mastered){
-               
+        console.log(`decreasing masteryQuizNum ${masteryQuizNum}`)
         masteryQuizNum--
         mastered = false
     }
@@ -305,14 +333,14 @@ minorBtn.addEventListener('click', () => {
     }
     setTimeout(() => {
         banner.style.backgroundColor = backgroundColor;
-      }, 500);
+      }, 1000);
     quiz()
    
 })
 
 majorBtn.addEventListener('click', () => {
    
-    let tempColor = banner.style.backgroundColor
+    
     
     if (quality === major){
         banner.style.backgroundColor = 'green'
@@ -324,8 +352,8 @@ majorBtn.addEventListener('click', () => {
         }
     }   
     setTimeout(() => {
-        banner.style.backgroundColor = tempColor;
-      }, 500);
+        banner.style.backgroundColor = backgroundColor;
+      }, 1000);
     quiz()
     
 })
@@ -344,6 +372,9 @@ beginBtn.addEventListener('click', () => {
     } else if (pageType === masteryQuizPage) {
     
         runMasteryQuiz()
+    } else {
+        index++
+        changeImage()
     }
     
         
